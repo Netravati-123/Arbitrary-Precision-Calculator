@@ -11,7 +11,7 @@ int insert_last(Dlist **head, Dlist **tail, int data)
     newnode->prev = *tail;
     newnode->next = NULL;
 
-    if (*head == NULL)
+    if (*head == NULL) //check list is empty
     {
         *head = newnode;
         *tail = newnode;
@@ -25,7 +25,7 @@ int insert_last(Dlist **head, Dlist **tail, int data)
     return 0;
 }
 
-int insert_first(Dlist **head, Dlist **tail, int data)
+int insert_first(Dlist **head, Dlist **tail, int data) //result must be from left to right
 {
     Dlist *newnode = malloc(sizeof(Dlist));
 
@@ -50,7 +50,7 @@ int insert_first(Dlist **head, Dlist **tail, int data)
     return 0;
 }
 
-void print_list(Dlist *head)
+void print_list(Dlist *head)            // Dispalying opernads and results
 {
     while (head != NULL)
     {
@@ -61,7 +61,7 @@ void print_list(Dlist *head)
     printf("\n");
 }
 
-void delete_list(Dlist **head, Dlist **tail)
+void delete_list(Dlist **head, Dlist **tail) //clean up memory
 {
     Dlist *temp;
 

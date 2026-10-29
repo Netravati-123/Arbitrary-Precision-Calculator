@@ -1,4 +1,5 @@
 #include "apc.h"
+#include <string.h>
 
 int main(int argc, char *argv[])
 {
@@ -6,15 +7,18 @@ int main(int argc, char *argv[])
     Dlist *head2 = NULL, *tail2 = NULL;
     Dlist *result_head = NULL, *result_tail = NULL;
 
+    int cmp, negative = 0, status = 0;
+
     if (argc != 4)
     {
-        printf("Usage: ./a.out operand1 + operand2\n");
+        printf("Usage: ./a.out operand1 operator operand2\n");
         return 1;
     }
 
-    if (argv[2][0] != '+' || argv[2][1] != '\0')
+    if (strcmp(argv[2], "+") != 0 &&
+        strcmp(argv[2], "-") != 0)
     {
-        printf("Invalid operator. Use + only.\n");
+        printf("Invalid operator. Use + or - only.\n");
         return 1;
     }
 
@@ -22,23 +26,37 @@ int main(int argc, char *argv[])
         store_operand(&head2, &tail2, argv[3]) != 0)
     {
         printf("Invalid operand or memory allocation failed\n");
-
-        delete_list(&head1, &tail1);
-        delete_list(&head2, &tail2);
-
-        return 1;
+        status = 1;
+        goto cleanup;
     }
 
-    if (addition(tail1, tail2,
-                 &result_head, &result_tail) != 0)
+    if (strcmp(argv[2], "+") == 0)
+    {
+        status = addition(tail1, tail2,
+                          &result_head, &result_tail);
+    }
+    else
+    {
+        cmp = compare_lists(head1, head2);
+
+        if (cmp >= 0)
+        {
+            status = subtraction(tail1, tail2,
+                                 &result_head, &result_tail);
+        }
+        else
+        {
+            negative = 1;
+
+            status = subtraction(tail2, tail1,
+                                 &result_head, &result_tail);
+        }
+    }
+
+    if (status != 0)
     {
         printf("Memory allocation failed\n");
-
-        delete_list(&head1, &tail1);
-        delete_list(&head2, &tail2);
-        delete_list(&result_head, &result_tail);
-
-        return 1;
+        goto cleanup;
     }
 
     printf("First operand: ");
@@ -48,11 +66,27 @@ int main(int argc, char *argv[])
     print_list(head2);
 
     printf("Result: ");
+
+    if (negative && strcmp(argv[2], "-") == 0)
+    {
+        Dlist *temp = result_head;
+
+        while (temp != NULL && temp->data == 0 &&
+               temp->next != NULL)
+        {
+            temp = temp->next;
+        }
+
+        if (temp->data != 0)
+            printf("-");
+    }
+
     print_list(result_head);
 
+cleanup:
     delete_list(&head1, &tail1);
     delete_list(&head2, &tail2);
     delete_list(&result_head, &result_tail);
 
-    return 0;
+    return status;
 }

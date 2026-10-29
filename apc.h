@@ -20,8 +20,11 @@ void delete_list(Dlist **head, Dlist **tail);
 
 /* APC functions */
 int store_operand(Dlist **head, Dlist **tail, char *str);
+int compare_lists(Dlist *head1,Dlist*head2);
 
 int addition(Dlist *tail1, Dlist *tail2,
+             Dlist **result_head, Dlist **result_tail);
+int subtraction(Dlist *tail1, Dlist *tail2,
              Dlist **result_head, Dlist **result_tail);
 
 #endif
