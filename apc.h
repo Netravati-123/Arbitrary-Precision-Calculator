@@ -26,5 +26,6 @@ int addition(Dlist *tail1, Dlist *tail2,
              Dlist **result_head, Dlist **result_tail);
 int subtraction(Dlist *tail1, Dlist *tail2,
              Dlist **result_head, Dlist **result_tail);
+int multiplication(Dlist *tail1, Dlist *tail2, Dlist **result_head, Dlist **result_tail);            
 
 #endif

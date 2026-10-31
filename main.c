@@ -1,5 +1,4 @@
 #include "apc.h"
-#include <string.h>
 
 int main(int argc, char *argv[])
 {
@@ -15,10 +14,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (strcmp(argv[2], "+") != 0 &&
-        strcmp(argv[2], "-") != 0)
+    if (argv[2][1] != '\0' ||
+        (argv[2][0] != '+' &&
+         argv[2][0] != '-' &&
+         argv[2][0] != '*'))
     {
-        printf("Invalid operator. Use + or - only.\n");
+        printf("Invalid operator. Use +, - or * only.\n");
         return 1;
     }
 
@@ -30,27 +31,28 @@ int main(int argc, char *argv[])
         goto cleanup;
     }
 
-    if (strcmp(argv[2], "+") == 0)
+    if (argv[2][0] == '+')
     {
-        status = addition(tail1, tail2,
-                          &result_head, &result_tail);
+        status = addition(tail1, tail2,&result_head, &result_tail);
     }
-    else
+    else if (argv[2][0] == '-')
     {
-        cmp = compare_lists(head1, head2);
+        cmp = compare_list(head1, head2);
 
         if (cmp >= 0)
         {
-            status = subtraction(tail1, tail2,
-                                 &result_head, &result_tail);
+            status = subtraction(tail1, tail2,&result_head, &result_tail);
         }
         else
         {
             negative = 1;
 
-            status = subtraction(tail2, tail1,
-                                 &result_head, &result_tail);
+            status = subtraction(tail2, tail1,&result_head, &result_tail);
         }
+    }
+    else
+    {
+        status = multiplication(tail1, tail2,&result_head, &result_tail);
     }
 
     if (status != 0)
@@ -67,7 +69,7 @@ int main(int argc, char *argv[])
 
     printf("Result: ");
 
-    if (negative && strcmp(argv[2], "-") == 0)
+    if (negative)
     {
         Dlist *temp = result_head;
 
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
             temp = temp->next;
         }
 
-        if (temp->data != 0)
+        if (temp != NULL && temp->data != 0)
             printf("-");
     }
 
