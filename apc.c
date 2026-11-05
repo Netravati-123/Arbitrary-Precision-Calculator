@@ -1,5 +1,6 @@
 #include "apc.h"
 
+
 int store_operand(Dlist **head, Dlist **tail, char *str)
 {
     int i = 0;
@@ -147,4 +148,175 @@ int subtraction(Dlist *tail1, Dlist *tail2,
     }
 
     return 0;
+}
+
+    int multiplication(Dlist *tail1, Dlist *tail2,
+                   Dlist **result_head, Dlist **result_tail)
+{
+    Dlist *list1_head = NULL, *list1_tail = NULL;
+    Dlist *list2_head = NULL, *list2_tail = NULL;
+    Dlist *list3_head = NULL, *list3_tail = NULL;
+
+    Dlist *temp1, *temp2;
+
+    int carry, product, digit, shift = 0;
+
+    insert_last(&list3_head, &list3_tail, 0);
+
+    temp2 = tail2;
+
+    while (temp2 != NULL)
+    {
+        digit = temp2->data;
+        temp1 = tail1;
+        carry = 0;
+
+        while (temp1 != NULL || carry != 0)
+        {
+            product = carry;
+
+            if (temp1 != NULL)
+            {
+                product += temp1->data * digit;
+                temp1 = temp1->prev;
+            }
+
+            carry = product / 10;
+            product = product % 10;
+
+            if (insert_first(&list1_head, &list1_tail, product))
+                goto error;
+        }
+
+        for (int i = 0; i < shift; i++)
+        {
+            if (insert_last(&list1_head, &list1_tail, 0))
+                goto error;
+        }
+
+        if (addition(list3_tail, list1_tail,
+                     &list2_head, &list2_tail))
+            goto error;
+
+        delete_list(&list3_head, &list3_tail);
+        delete_list(&list1_head, &list1_tail);
+
+        list3_head = list2_head;
+        list3_tail = list2_tail;
+
+        list2_head = NULL;
+        list2_tail = NULL;
+
+        shift++;
+        temp2 = temp2->prev;
+    }
+
+    *result_head = list3_head;
+    *result_tail = list3_tail;
+
+    return 0;
+
+error:
+    delete_list(&list1_head, &list1_tail);
+    delete_list(&list2_head, &list2_tail);
+    delete_list(&list3_head, &list3_tail);
+
+    return 1;
+}
+
+     int is_zero(Dlist *head)
+{
+    while (head != NULL)
+    {
+        if (head->data != 0)
+            return 0;
+
+        head = head->next;
+    }
+
+    return 1;
+}
+
+static void remove_leading_zeros(Dlist **head, Dlist **tail)
+{
+    while (*head != NULL && (*head)->data == 0 &&
+           (*head)->next != NULL)
+    {
+        Dlist *temp = *head;
+
+        *head = (*head)->next;
+        (*head)->prev = NULL;
+
+        free(temp);
+    }
+
+    if (*head == NULL)
+        *tail = NULL;
+}
+
+int division(Dlist *head1, Dlist *head2,
+             Dlist **result_head, Dlist **result_tail)
+{
+    Dlist *rem_head = NULL, *rem_tail = NULL;
+    Dlist *temp_head = NULL, *temp_tail = NULL;
+    Dlist *divisor_tail = head2;
+    Dlist *digit = head1;
+
+    int count;
+
+    if (head1 == NULL || head2 == NULL || is_zero(head2))
+        return 2;
+
+    while (divisor_tail->next != NULL)
+        divisor_tail = divisor_tail->next;
+
+    while (digit != NULL)
+    {
+        // Bring down the next digit
+        if (insert_last(&rem_head, &rem_tail, digit->data))
+            goto memory_error;
+
+        remove_leading_zeros(&rem_head, &rem_tail);
+
+        count = 0;
+
+        // Subtract divisor until remainder is smaller
+        while (compare_lists(rem_head, head2) >= 0)
+        {
+            if (subtraction(rem_tail, divisor_tail,
+                            &temp_head, &temp_tail) != 0)
+                goto memory_error;
+
+            delete_list(&rem_head, &rem_tail);
+
+            rem_head = temp_head;
+            rem_tail = temp_tail;
+
+            temp_head = NULL;
+            temp_tail = NULL;
+
+            remove_leading_zeros(&rem_head, &rem_tail);
+
+            count++;
+        }
+
+        // Store quotient digit
+        if (insert_last(result_head, result_tail, count))
+            goto memory_error;
+
+        digit = digit->next;
+    }
+
+    remove_leading_zeros(result_head, result_tail);
+
+    delete_list(&rem_head, &rem_tail);
+
+    return 0;
+
+memory_error:
+    delete_list(&rem_head, &rem_tail);
+    delete_list(&temp_head, &temp_tail);
+    delete_list(result_head, result_tail);
+
+    return 1;
 }

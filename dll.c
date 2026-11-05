@@ -52,7 +52,11 @@ int insert_first(Dlist **head, Dlist **tail, int data) //result must be from lef
 
 void print_list(Dlist *head)            // Dispalying opernads and results
 {
-    while (head != NULL)
+    while (head != NULL && head->data ==0&&head->next!=NULL)
+    {
+        head=head->next;
+    }
+    while(head!=NULL)
     {
         printf("%d", head->data);
         head = head->next;
